@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>오늘의 급식</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            padding: 30px;
+            background: #f4f6f8;
+        }
+        .container {
+            max-width: 650px;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #meal {
+            margin-top: 10px;
+            font-size: 20px;
+            white-space: pre-line;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="meal-date"></h2>
+        <div id="meal">불러오는 중...</div>
+    </div>
+
+    <script>
+        async function loadMeal() {
+            const apiUrl = "https://todaymeal.vercel.app/today";
+
+            // ▼ Timeout 30초 설정
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+            try {
+                const response = await fetch(apiUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                let text = await response.text();
+
+                // 날짜 / 메뉴 분리
+                const [dateText, menuText] = text.split("<br>");
+
+                document.getElementById("meal-date").innerHTML = dateText;
+                document.getElementById("meal").innerHTML = menuText;
+
+            } catch (e) {
+                clearTimeout(timeoutId);
+                document.getElementById("meal").innerHTML = "급식을 불러오지 못했습니다. (timeout 또는 서버 오류)";
+            }
+        }
+
+        loadMeal();
+        setInterval(loadMeal, 86400000); // 하루 1회 새로고침
+    </script>
+</body>
+</html>
